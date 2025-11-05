@@ -1,8 +1,6 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using Core;
-using UnityEngine;
 using UnityEngine.SceneManagement;
 
 namespace Shop
@@ -12,7 +10,6 @@ namespace Shop
         private readonly BundleCardView _view;
         private readonly BundleData _model;
 
-        private bool _purchaseProcessing;
         private List<INotifyPropertyChanged> _properties =  new List<INotifyPropertyChanged>();
 
         public BundleCardController(BundleCardView bundleView, BundleData model)
@@ -23,11 +20,17 @@ namespace Shop
 
         public void Initialize()
         {
-            _purchaseProcessing = false;
             _view.SetName(_model.Name);
             _view.PurchaseButton.interactable = _model.CanPurchase();
+            if (PurchaseService.Instance.IsPurchaseProcess(_model.GetInstanceID()))
+            {
+                _view.PurchaseButton.interactable = false;
+                _view.SetPurchaseButtonText("Processing...");
+            }
+            
             _view.PurchaseButton.onClick.AddListener(OnPurchaseClick);
             _view.InfoButton.onClick.AddListener(OnInfoClick);
+            PurchaseService.Instance.OnPurchaseCompleted += OnPurchaseCompleted;
 
             foreach (var cost in _model.Costs)
             {
@@ -54,27 +57,24 @@ namespace Shop
 
         private void OnPurchaseClick()
         {
-            if (_purchaseProcessing)
-            {
-                return;
-            }
-            
             if (!_model.CanPurchase())
             {
                 return;
             }
-
-            _view.StartCoroutine(Purchase());
-        }
-
-        private IEnumerator Purchase()
-        {
-            _purchaseProcessing = true;
+            
             _view.PurchaseButton.interactable = false;
             _view.SetPurchaseButtonText("Processing...");
-            yield return new WaitForSeconds(3f);
+
+            PurchaseService.Instance.Purchase(_model.GetInstanceID());
+        }
+
+        private void OnPurchaseCompleted(int id)
+        {
+            if (_model.GetInstanceID() != id)
+            {
+                return;
+            }
             _model.Purchase();
-            _purchaseProcessing = false;
             _view.SetPurchaseButtonText("Purchase");
         }
 
@@ -87,6 +87,12 @@ namespace Shop
         {
             _view.PurchaseButton.onClick.RemoveListener(OnPurchaseClick);
             _view.InfoButton.onClick.RemoveListener(OnInfoClick);
+            
+            if (PurchaseService.Instance)
+            {
+                PurchaseService.Instance.OnPurchaseCompleted -= OnPurchaseCompleted;
+            }
+            
             foreach (var property in _properties)
             {
                 property.OnPropertyChanged -= OnPropertyChanged;
