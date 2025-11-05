@@ -31,12 +31,7 @@ namespace Shop
 
             foreach (var cost in _model.Costs)
             {
-                if (!PlayerData.Instance.TryGetProperty(cost.PropertyType, out var obj))
-                {
-                    continue;
-                }
-                
-                if (obj is not INotifyPropertyChanged property)
+                if (!cost.TryGetProperty(out var property))
                 {
                     continue;
                 }

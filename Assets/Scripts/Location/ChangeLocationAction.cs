@@ -10,7 +10,7 @@ namespace Location
         [SerializeField] 
         private string _locationName;
 
-        public override Type PropertyType => typeof(LocationProperty);
+        protected override Type PropertyType => typeof(LocationProperty);
 
         public override bool CanApply()
         {

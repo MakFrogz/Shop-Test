@@ -10,7 +10,7 @@ namespace Gold
         [SerializeField] 
         private int _amount;
 
-        public override Type PropertyType => typeof(GoldProperty);
+        protected override Type PropertyType => typeof(GoldProperty);
 
         public override bool CanApply()
         {

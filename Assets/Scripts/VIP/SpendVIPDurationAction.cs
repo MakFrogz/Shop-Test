@@ -10,7 +10,7 @@ namespace VIP
         [SerializeField] 
         private int _duration;
 
-        public override Type PropertyType => typeof(VIPProperty);
+        protected override Type PropertyType => typeof(VIPProperty);
 
         public override bool CanApply()
         {

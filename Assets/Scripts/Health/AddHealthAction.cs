@@ -10,7 +10,7 @@ namespace Health
         [SerializeField] 
         private int _amount;
 
-        public override Type PropertyType => typeof(HealthProperty);
+        protected override Type PropertyType => typeof(HealthProperty);
 
         public override bool CanApply()
         {
